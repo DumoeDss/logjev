@@ -1,0 +1,24 @@
+{
+  "name": "@atelierai/logjev",
+  "version": "0.1.0",
+  "description": "Turn OpenAI-compatible token logprobs into Jev-compatible typed decisions",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": { "type": "git", "url": "git+https://github.com/DumoeDss/logjev.git" },
+  "homepage": "https://github.com/DumoeDss/logjev#readme",
+  "bugs": { "url": "https://github.com/DumoeDss/logjev/issues" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "engines": { "node": ">=22" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }, "./node": { "types": "./dist/server.d.ts", "import": "./dist/server.js" } },
+  "bin": { "logjev": "./dist/cli.js" },
+  "files": ["dist", "demos", "skills", "docs/assets", "config.example.yaml", ".env.example", "README.md", "README_zh.md", "CHANGELOG.md"],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "tsc --watch",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": { "yaml": "^2.9.1" },
+  "devDependencies": { "@types/node": "^22.20.4", "typescript": "^7.0.2" }
+}

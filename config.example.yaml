@@ -1,0 +1,53 @@
+active: deepseek
+globals:
+  port: 8013
+  prompt_mode: full
+  read_temperature: 1.0
+  topk: 20
+  floor_gap: 5.0
+  retry_delays_ms:
+  - 800
+  - 2000
+  - 5000
+  concurrency: 4
+  cors_origins:
+  - '*'
+providers:
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: qwen/qwen3.8-27b
+    topk: 5
+    extra_body:
+      reasoning:
+        enabled: false
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+    model: deepseek-flash
+    extra_body:
+      thinking:
+        type: disabled
+  nim:
+    base_url: https://integrate.api.nvidia.com/v1
+    api_key_env: NIM_API_KEY
+    model: google/diffusiongemma-26b-a4b-it
+    extra_body: {}
+  # Audio: use messages content with audio_url and a data:audio/wav;base64,... URL.
+  nim-omni:
+    base_url: https://integrate.api.nvidia.com/v1
+    api_key_env: NIM_API_KEY
+    model: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+    topk: 5
+    extra_body:
+      chat_template_kwargs: {enable_thinking: false}
+  jev:
+    kind: jev
+    base_url: https://api.typesafe.ai/v1/systemone
+    api_key_env: TYPESAFE_API_KEY
+    model: jev-1.13
+  jev-or:
+    kind: jev
+    base_url: https://openrouter.ai/api/alpha/decisions
+    api_key_env: OPENROUTER_API_KEY
+    model: typesafe/jev-1.13
