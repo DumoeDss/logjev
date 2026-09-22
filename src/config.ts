@@ -23,6 +23,7 @@ export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): 
     providers[name] = {
       name, kind, baseUrl: value.base_url, model: value.model || '',
       apiKey: typeof value.api_key_env === 'string' ? env[value.api_key_env] || '' : '',
+      apiKeyEnv: typeof value.api_key_env === 'string' ? value.api_key_env : undefined,
       topk: value.topk == null ? undefined : number(value.topk, 20, `${name}.topk`, 1),
       extraBody: isObject(value.extra_body) ? value.extra_body : {},
     };

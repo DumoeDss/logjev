@@ -53,14 +53,14 @@ POST /v1/systemone {state|messages, questions}
 需要 **Node.js 22+**。npm 包名为 **[@atelierai/logjev](https://www.npmjs.com/package/@atelierai/logjev)**，命令仍是 `logjev`。在新应用目录执行：
 
 ```powershell
-npm install @atelierai/logjev@0.1.0
+npm install @atelierai/logjev@0.1.1
 Copy-Item node_modules/@atelierai/logjev/config.example.yaml config.yaml
 Copy-Item node_modules/@atelierai/logjev/.env.example .env
 # Set provider keys in .env and choose providers in config.yaml.
 npx logjev
 ```
 
-包内包含编译产物、demos 和 skills；Bash 可将 `Copy-Item` 换成 `cp`。[GitHub v0.1.0 Release](https://github.com/DumoeDss/logjev/releases/tag/v0.1.0) 也提供同一份 `.tgz` 安装包。
+包内包含编译产物、demos 和 skills；Bash 可将 `Copy-Item` 换成 `cp`。[GitHub v0.1.1 Release](https://github.com/DumoeDss/logjev/releases/tag/v0.1.1) 也提供同一份 `.tgz` 安装包。
 
 ## 从源码运行
 
@@ -80,7 +80,9 @@ npm start
 
 API 默认 **http://127.0.0.1:8013**，演示入口 **http://127.0.0.1:8013/demos/**。Python 版使用 8012，可同时运行。Node 会把自身地址注入页面作为默认 endpoint，自定义端口同样生效；用户保存的 endpoint 优先。
 
-`npm start -- --config <路径>` 指定另一份配置，自动加载该 YAML 同目录的 `.env`，不覆盖进程已有环境变量。以相邻目录 `LogJev-py` 为例，可直接共用现有配置和密钥：
+`npm start -- --config <路径>` 指定另一份配置，自动加载该 YAML 同目录的 `.env`，不覆盖进程已有环境变量。Node 不会自动读取相邻 Python 仓库的 `.env`；声明了 `api_key_env` 的 provider 在密钥缺失时会直接返回带配置提示的 503，不再发送无凭证请求。只需配置实际使用的 provider；无需认证的本地服务可省略 `api_key_env`。
+
+以相邻目录 `LogJev-py` 为例，可显式共用现有配置和密钥：
 
 ```powershell
 $env:PORT = '8013'
@@ -271,6 +273,7 @@ Node HTTP 请求体上限为 **16 MiB**，base64 编码会增加约三分之一�
 | 422 | JSON、provider、model、上下文、prompt mode 或题目格式错误 |
 | 413 | 超过 Node HTTP 请求体限制 |
 | 502 | 上游失败、重试耗尽、上游响应错误或没有 logprobs |
+| 503 | 所选 provider 的密钥变量为空；配置环境变量或 YAML 同目录的 `.env` 后重启 |
 
 最终的上游 429、401 等错误也会包装为 502，并带诊断信息，不原样透传 HTTP 状态码。`/health` 正常只说明配置已加载，不能证明上游密钥或 logprobs 可用。
 

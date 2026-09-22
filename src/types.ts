@@ -15,6 +15,8 @@ export interface Provider {
   kind: 'chat' | 'jev';
   baseUrl: string;
   apiKey?: string;
+  /** Configured credential variable; when present, this provider requires a key. */
+  apiKeyEnv?: string;
   model: string;
   topk?: number;
   extraBody?: JsonObject;

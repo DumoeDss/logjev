@@ -1,6 +1,6 @@
 {
   "name": "@atelierai/logjev",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Turn OpenAI-compatible token logprobs into Jev-compatible typed decisions",
   "type": "module",
   "license": "UNLICENSED",

@@ -53,14 +53,14 @@ Both implementations expose `choice`, `score`, and `noul`, support image and aud
 Requires **Node.js 22+**. The npm package is **[@atelierai/logjev](https://www.npmjs.com/package/@atelierai/logjev)**; the CLI command is `logjev`. In a new application directory:
 
 ```sh
-npm install @atelierai/logjev@0.1.0
+npm install @atelierai/logjev@0.1.1
 cp node_modules/@atelierai/logjev/config.example.yaml config.yaml
 cp node_modules/@atelierai/logjev/.env.example .env
 # Set provider keys in .env and choose providers in config.yaml.
 npx logjev
 ```
 
-The package includes compiled code, demos, and skills. PowerShell users can replace `cp` with `Copy-Item`. The same `.tgz` package is available in the [v0.1.0 GitHub Release](https://github.com/DumoeDss/logjev/releases/tag/v0.1.0).
+The package includes compiled code, demos, and skills. PowerShell users can replace `cp` with `Copy-Item`. The same `.tgz` package is available in the [v0.1.1 GitHub Release](https://github.com/DumoeDss/logjev/releases/tag/v0.1.1).
 
 ## Run from source
 
@@ -81,6 +81,8 @@ The copy steps are for first-time setup; edit existing configuration files if al
 Default API: **http://127.0.0.1:8013**. Shared demos: **http://127.0.0.1:8013/demos/**. The demos receive the running server's origin as their default endpoint, including custom ports. Saved per-model settings still take precedence. The separate Python service keeps port 8012 so both can run together.
 
 `npm start -- --config /path/to/config.yaml` selects another configuration. A `.env` beside that configuration is loaded without overriding existing environment variables. `PORT`, `HOST` (default `127.0.0.1`), `LOGJEV_ACTIVE`, `PROMPT_MODE`, and `BRIDGE_API_KEY` override configuration. `OPENJEV_ACTIVE` remains a compatibility alias.
+
+Node does not automatically read a sibling Python repository's `.env`. A provider declaring `api_key_env` requires that variable to be nonempty; missing credentials return 503 with setup instructions before any upstream call. Configure only the providers you use. Keyless local servers can omit `api_key_env`.
 
 To share the existing Python configuration and keys, run from this repository (assuming the sibling folder is named `LogJev-py`):
 
@@ -273,6 +275,7 @@ The Node HTTP request body limit is **16 MiB**; base64 adds roughly one third to
 | 422 | Invalid JSON, provider, model, context, prompt mode, or question |
 | 413 | Node HTTP body limit exceeded |
 | 502 | Upstream failure, exhausted retries, invalid upstream response, or missing logprobs |
+| 503 | Selected provider's configured API-key variable is empty; configure its environment or adjacent `.env` and restart |
 
 Upstream errors, including a final upstream 429 or 401, are reported by this bridge as 502 with a diagnostic; they are not transparently forwarded as HTTP status codes. A healthy `/health` confirms loaded configuration, not working upstream credentials or logprob support.
 

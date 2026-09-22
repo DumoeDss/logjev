@@ -39,6 +39,11 @@ export function createBridge(config: BridgeConfig, options: BridgeOptions = {}) 
     finally { const next = waiting.shift(); if (next) next(); else running--; }
   }
   const visibleProviders = () => Object.values(config.providers).map(({ name, kind, model }) => ({ name, kind, model }));
+  function requireProviderKey(provider: Provider): void {
+    if (provider.apiKeyEnv && !provider.apiKey?.trim()) {
+      throw new HttpError(503, `provider '${provider.name}' is missing ${provider.apiKeyEnv}. Set it in the environment or in .env beside the selected config.yaml, then restart LogJev.`);
+    }
+  }
   function headers(provider: Provider): Record<string, string> {
     return { 'Content-Type': 'application/json', Accept: 'application/json', ...(provider.apiKey ? { Authorization: `Bearer ${provider.apiKey}` } : {}) };
   }
@@ -124,6 +129,7 @@ export function createBridge(config: BridgeConfig, options: BridgeOptions = {}) 
       });
     }
     if (!isObject(body.questions) || !Object.keys(body.questions).length) throw new HttpError(422, 'questions must be a non-empty object');
+    requireProviderKey(provider);
     const started = performance.now();
     if (provider.kind === 'jev') {
       const payload: JsonObject = { model, questions: body.questions };
@@ -157,6 +163,7 @@ export function createBridge(config: BridgeConfig, options: BridgeOptions = {}) 
     if (request.method === 'GET' && path === '/health') return Response.json({ ok: true, upstream: provider.baseUrl, model: provider.model, active: config.active, providers: visibleProviders() });
     if (request.method === 'GET' && path === '/v1/models') {
       if (provider.kind === 'jev') return Response.json({ data: [{ id: provider.model, object: 'model' }] });
+      requireProviderKey(provider);
       let data: unknown;
       try {
         const response = await upstreamFetch(provider.baseUrl.replace(/\/+$/, '') + '/models', { headers: headers(provider), signal: AbortSignal.timeout(timeout) });

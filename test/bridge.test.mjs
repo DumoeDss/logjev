@@ -58,6 +58,29 @@ test('global concurrency cap spans simultaneous requests',async()=>{
   const responses=await Promise.all([bridge(request({questions:{a:q,b:q,c:q}})),bridge(request({questions:{a:q,b:q,c:q}}))]);
   assert(responses.every(r=>r.status===200));assert.equal(maximum,2);
 });
+test('missing selected-provider credentials fail clearly without calling upstream',async()=>{
+  for(const name of ['chat','official']) {
+    for(const missing of ['', '  ']) {
+      let calls=0;const cfg=config();cfg.active=name;
+      cfg.providers[name].apiKeyEnv='FIXTURE_MISSING_KEY';cfg.providers[name].apiKey=missing;
+      const bridge=createBridge(cfg,{fetch:async()=>{calls++;return upstream();}});
+      const r=await bridge(request({questions:{q}}));assert.equal(r.status,503);
+      const data=await r.json();assert.match(data.detail,/FIXTURE_MISSING_KEY/);assert.match(data.detail,/\.env beside the selected config.yaml/);assert.match(data.detail,/restart/);
+      if(name==='chat') assert.equal((await bridge(new Request('http://bridge.test/v1/models'))).status,503);
+      for(const path of ['/health','/v1/providers']) assert.equal((await bridge(new Request('http://bridge.test'+path))).status,200);
+      assert.equal(calls,0);
+    }
+  }
+});
+test('keyless local servers and configured providers work despite unused missing credentials',async()=>{
+  const cfg=config();cfg.providers.chat.apiKey='';
+  cfg.providers.official.apiKeyEnv='UNUSED_KEY';cfg.providers.official.apiKey='';
+  const calls=[];
+  const bridge=createBridge(cfg,{fetch:async(_url,init)=>{calls.push(init.headers);return upstream();}});
+  assert.equal((await bridge(request({questions:{q}}))).status,200);assert.equal(calls[0].Authorization,undefined);
+  cfg.providers.chat.apiKeyEnv='PRESENT_KEY';cfg.providers.chat.apiKey='fixture-present';
+  assert.equal((await bridge(request({questions:{q}}))).status,200);assert.equal(calls[1].Authorization,'Bearer fixture-present');
+});
 test('provider metadata excludes keys; models default first; CORS allowlist',async()=>{
   const cfg=config();cfg.corsOrigins=['http://allowed.test'];
   const bridge=createBridge(cfg,{fetch:async()=>Response.json({data:[{id:'z'},{id:'test-model'},{id:'a'}]})});

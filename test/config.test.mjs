@@ -13,6 +13,7 @@ test('YAML settings, provider overrides, environment precedence, and invalid con
   await writeFile(path,yaml);
   const cfg=loadConfig(path,{LOGJEV_ACTIVE:'second',OPENJEV_ACTIVE:'first',PORT:'9100',FIXTURE_KEY:'test-key',PROMPT_MODE:'minimal'});
   assert.equal(cfg.active,'second');assert.equal(cfg.port,9100);assert.equal(cfg.providers.second.apiKey,'test-key');assert.equal(cfg.providers.second.topk,5);assert.equal(cfg.promptMode,'minimal');assert.equal(cfg.concurrency,3);
+  assert.equal(cfg.providers.second.apiKeyEnv,'FIXTURE_KEY');assert.equal(cfg.providers.first.apiKeyEnv,undefined);
   assert.equal(loadConfig(path,{OPENJEV_ACTIVE:'second'}).active,'second');
   await writeFile(path,yaml.replace('concurrency: 3','concurrency: 0'));
   assert.throws(()=>loadConfig(path,{}),/concurrency/);
